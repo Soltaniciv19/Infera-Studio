@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'; object-src 'none'">
+  <title>Infera Studio</title>
+  <link rel="stylesheet" href="./style.css">
+  <script src="./markdown-it.js" defer></script>
+  <script src="./highlight.js" defer></script>
+  <script src="./text-reveal.js" defer></script>
+  <script src="./markdown.js" defer></script>
+  <script src="./dialogs.js" defer></script>
+  <script src="./line-chart.js" defer></script>
+  <script src="./analytics.js" defer></script>
+  <script src="./voice.js" defer></script>
+  <script src="./renderer.js" defer></script>
+</head>
+<body>
+  <section id="startup" class="startup" aria-label="Starting Infera Studio">
+    <div class="startup-logo" aria-hidden="true">
+      <img src="./icon.png" width="72" height="72" alt="">
+    </div>
+    <h1>Infera Studio</h1>
+    <p id="startup-status" role="status">Opening your model library and conversations…</p>
+  </section>
+  <svg class="icon-defs" aria-hidden="true" width="0" height="0" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="icon-sidebar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></symbol>
+    <symbol id="icon-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="icon-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="5.5"/><path d="m15 15 4 4"/></symbol>
+    <symbol id="icon-download" viewBox="0 0 24 24"><path d="M12 3v12m-4-4 4 4 4-4M4 15v5h16v-5"/></symbol>
+    <symbol id="icon-chevron-right" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+    <symbol id="icon-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="icon-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="icon-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><ellipse cx="12" cy="12" rx="4" ry="9"/></symbol>
+    <symbol id="icon-arrow-up" viewBox="0 0 24 24"><path d="M12 19V5m-6 6 6-6 6 6"/></symbol>
+    <symbol id="icon-mic" viewBox="0 0 24 24"><rect x="9" y="2.5" width="6" height="12" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3.5m-3 0h6"/></symbol>
+    <symbol id="icon-record-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="icon-settings" viewBox="0 0 24 24"><path d="m10 3-.6 2.2-1.4.8-2.2-.6-2 3.5 1.6 1.6v1.7l-1.6 1.6 2 3.5 2.2-.6 1.4.8.6 2.2h4l.6-2.2 1.4-.8 2.2.6 2-3.5-1.6-1.6v-1.7l1.6-1.6-2-3.5-2.2.6-1.4-.8L14 3z"/><circle cx="12" cy="11.4" r="3"/></symbol>
+    <symbol id="icon-more" viewBox="0 0 24 24"><path d="M5 12h.1m6.9 0h.1m6.9 0h.1" stroke-width="3"/></symbol>
+    <symbol id="icon-pin" viewBox="0 0 24 24"><path d="M15 3l6 6-3 1-3 5v3l-9-9h3l5-3 1-3zM10.5 13.5 4 20"/></symbol>
+    <symbol id="icon-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+    <symbol id="icon-appearance" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4"/></symbol>
+    <symbol id="icon-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+    <symbol id="icon-chip" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M10 10h4v4h-4zm0-4V3m4 3V3m-4 15v3m4-3v3M6 10H3m3 4H3m15-4h3m-3 4h3"/></symbol>
+    <symbol id="icon-sliders" viewBox="0 0 24 24"><path d="M4 6h4m4 0h8M4 12h9m4 0h3M4 18h2m4 0h10M8 4v4m9 2v4m-7 2v4"/></symbol>
+    <symbol id="icon-stats" viewBox="0 0 24 24"><path d="M4 4v16h16M7 13h3l2-5 3 8 2-4h3"/></symbol>
+    <symbol id="icon-server" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="6" rx="2"/><rect x="3" y="14" width="18" height="6" rx="2"/><path d="M7 7h.1M7 17h.1"/></symbol>
+    <symbol id="icon-monitor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M6 11h3l2-3 2 5 2-2h3m-10 10h8m-4-4v4"/></symbol>
+    <symbol id="icon-instructions" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6m-6 4h6m-6 4h4"/></symbol>
+    <symbol id="icon-attach" viewBox="0 0 24 24"><path d="m8 13 6.5-6.5a2 2 0 0 1 2.8 2.8l-8 8a4 4 0 0 1-5.7-5.7l8.8-8.8a6 6 0 0 1 8.5 8.5l-8.3 8.3"/></symbol>
+    <symbol id="icon-image" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-5-5-9 10"/></symbol>
+    <symbol id="icon-mtp" viewBox="0 0 24 24"><path d="m13 2-8 12h6l-1 8 9-12h-6z"/></symbol>
+    <symbol id="icon-thinking" viewBox="0 0 24 24"><path d="M9 19h6m-5 3h4m2-6v-.5c0-1 1-2 1.8-3A6 6 0 1 0 6 9a6 6 0 0 0 1.3 3.7c.8 1 1.7 2 1.7 2.8v.5"/></symbol>
+  </svg>
+  <aside class="sidebar" id="sidebar" aria-label="Conversations" inert>
+    <div class="brand">
+      <img src="./icon.png" alt="" width="26" height="26"><span>Infera Studio</span>
+      <button class="quiet icon-button" id="sidebar-close" type="button" aria-label="Hide conversations" aria-controls="sidebar" aria-expanded="true" aria-keyshortcuts="Control+B Meta+B" title="Hide conversations (Ctrl+B)">
+        <svg class="icon" aria-hidden="true"><use href="#icon-sidebar"/></svg>
+      </button>
+    </div>
+    <div class="conversation-controls">
+      <label class="search">
+        <svg class="icon" aria-hidden="true"><use href="#icon-search"/></svg>
+        <input id="search" type="search" placeholder="Search chats" aria-label="Search conversations" aria-keyshortcuts="Control+K Meta+K" title="Search conversations (Ctrl+K)" disabled>
+      </label>
+      <button class="new-chat icon-button" id="new-chat" type="button" aria-label="New chat" aria-keyshortcuts="Control+N Meta+N" title="New chat (Ctrl+N)" disabled>
+        <svg class="icon" aria-hidden="true"><use href="#icon-plus"/></svg>
+      </button>
+    </div>
+    <div id="history" class="history">
+      <section id="pinned-history" class="history-section" aria-labelledby="pinned-heading" hidden>
+        <div class="history-heading">
+          <svg class="icon" aria-hidden="true"><use href="#icon-pin"/></svg>
+          <h2 id="pinned-heading">Pinned</h2>
+          <span id="pinned-count"></span>
+        </div>
+        <ul id="pinned-chats" class="history-list" role="list"></ul>
+      </section>
+      <section id="recent-history" class="history-section" aria-labelledby="recent-heading" hidden>
+        <div class="history-heading"><h2 id="recent-heading">Recent</h2></div>
+        <ul id="recent-chats" class="history-list" role="list"></ul>
+      </section>
+      <p id="history-empty" class="history-meta" role="status" hidden></p>
+    </div>
+    <div class="sidebar-footer">
+      <button id="settings" class="quiet settings" type="button" disabled><svg class="icon" aria-hidden="true"><use href="#icon-settings"/></svg> Settings</button>
+    </div>
+  </aside>
+  <div id="history-menu" class="history-menu" popover role="group" aria-label="Conversation actions">
+    <button id="pin-chat" class="quiet" type="button" autofocus>
+      <svg class="icon" aria-hidden="true"><use href="#icon-pin"/></svg><span id="pin-chat-label">Pin to top</span>
+    </button>
+    <button id="rename-chat" class="quiet" type="button">Rename…</button>
+    <button id="delete-chat" class="quiet" type="button">Delete…</button>
+    <button id="delete-all-chats" class="quiet" type="button">Delete all…</button>
+    <p id="pin-error" class="error" role="status" hidden></p>
+  </div>
+  <main id="chat-workspace" inert>
+    <header class="toolbar">
+      <div class="conversation-heading">
+        <button class="quiet icon-button" id="sidebar-open" type="button" aria-label="Show conversations" aria-controls="sidebar" aria-expanded="true" aria-keyshortcuts="Control+B Meta+B" title="Show conversations (Ctrl+B)" hidden>
+          <svg class="icon" aria-hidden="true"><use href="#icon-sidebar"/></svg>
+        </button>
+        <span id="chat-title">Local chat</span>
+        <button id="chat-actions" class="quiet icon-button" type="button" aria-label="Conversation actions" aria-controls="history-menu" aria-expanded="false" title="Conversation actions" disabled><svg class="icon" aria-hidden="true"><use href="#icon-more"/></svg></button>
+      </div>
+      <div class="toolbar-actions">
+        <button class="quiet icon-button" id="server" type="button" aria-label="Inference server · Opening" title="Inference server · Opening" aria-haspopup="dialog" disabled>
+          <svg class="icon" aria-hidden="true"><use href="#icon-server"/></svg><span id="status-dot" data-state="Opening" aria-hidden="true"></span>
+        </button>
+        <button class="quiet icon-button" id="context" type="button" aria-label="Context and memory" title="Context and memory" aria-haspopup="dialog" disabled>
+          <svg class="context-ring" viewBox="0 0 24 24" aria-hidden="true">
+            <circle class="context-track" cx="12" cy="12" r="9"/>
+            <circle id="context-fill" cx="12" cy="12" r="9" pathLength="100" stroke-dasharray="0 100" transform="rotate(-90 12 12)"/>
+          </svg>
+        </button>
+        <button class="quiet icon-button" id="model-settings" type="button" aria-label="Model settings" title="Model settings" aria-haspopup="dialog" disabled>
+          <svg class="icon" aria-hidden="true"><use href="#icon-sliders"/></svg>
+        </button>
+        <button class="quiet icon-button" id="advanced-stats" type="button" aria-label="Advanced stats" title="Advanced inference stats" aria-haspopup="dialog" aria-controls="inference-analytics" disabled>
+          <svg class="icon" aria-hidden="true"><use href="#icon-stats"/></svg>
+        </button>
+        <button class="quiet icon-button" id="system-stats-toggle" type="button" aria-label="System statistics" title="System statistics" popovertarget="system-stats" hidden>
+          <svg class="icon" aria-hidden="true"><use href="#icon-monitor"/></svg>
+        </button>
+        <div id="system-stats" class="system-stats" popover role="group" aria-label="System statistics" tabindex="-1" autofocus hidden>
+          <select id="stats-gpu" aria-label="GPU to monitor" hidden></select>
+          <span data-stat="gpu_load">GPU load <strong>—</strong></span>
+          <span data-stat="gpu_vram">VRAM <strong>—</strong></span>
+          <span data-stat="gpu_temp">GPU temperature <strong>—</strong></span>
+          <span data-stat="cpu_load">CPU load <strong>—</strong></span>
+          <span data-stat="cpu_temp">CPU temperature <strong>—</strong></span>
+          <span data-stat="ram">RAM <strong>—</strong></span>
+          <span id="kv-occupancy" title="Occupied KV cache cells reported by llama.cpp" hidden>KV cache <strong>—</strong></span>
+        </div>
+      </div>
+    </header>
+    <section id="transcript" class="transcript" aria-label="Conversation" tabindex="0">
+      <div id="welcome" class="welcome">
+        <img src="./icon.png" width="52" height="52" alt="">
+        <h1>Start a conversation</h1>
+        <p id="welcome-note">Opening your local model library…</p>
+      </div>
+      <div id="messages" class="messages" hidden></div>
+    </section>
+    <section class="dock" aria-label="Message composer">
+      <div id="notice" class="notice" role="status" hidden>
+        <span id="notice-text"></span>
+        <button class="quiet" id="notice-action" type="button" hidden></button>
+      </div>
+      <form id="composer" class="composer">
+        <svg id="loading" class="loading-orbit" role="progressbar" aria-label="Loading model" hidden>
+          <rect pathLength="1000" class="loading-lead"/>
+          <rect pathLength="1000" class="loading-dashes"/>
+          <rect pathLength="1000" class="loading-dots"/>
+        </svg>
+        <div class="composer-options">
+          <div class="composer-mode">
+            <div class="chat-mode" role="group" aria-label="Chat mode">
+              <button id="mode-ask" type="button" class="quiet" aria-pressed="true" title="Chat with your model and use attachments" disabled>
+                <svg class="icon" aria-hidden="true"><use href="#icon-check"/></svg>Ask
+              </button>
+              <button id="mode-agent" type="button" class="quiet" aria-pressed="false" title="Let Agent read, search, and create files in a project folder" disabled>
+                <svg class="icon" aria-hidden="true"><use href="#icon-check"/></svg>Agent
+              </button>
+            </div>
+            <button id="workspace" type="button" class="quiet" aria-label="Change project folder" aria-describedby="workspace-name" hidden>
+              <svg class="icon" aria-hidden="true"><use href="#icon-folder"/></svg><span id="workspace-name"></span>
+              <svg class="icon chevron" aria-hidden="true"><use href="#icon-chevron-down"/></svg>
+            </button>
+          </div>
+          <div class="model-control">
+            <button class="model-picker" id="models" aria-haspopup="dialog" aria-expanded="false" type="button" disabled>
+              <span class="model-dot" aria-hidden="true"></span>
+              <span id="active-model">Select a model</span>
+              <svg class="icon chevron" aria-hidden="true"><use href="#icon-chevron-down"/></svg>
+            </button>
+            <div id="model-menu" class="model-menu" role="dialog" aria-label="Select a model" hidden>
+              <input id="model-search" type="search" aria-label="Filter models" placeholder="Filter models">
+              <div id="model-options" class="model-options"></div>
+              <div class="model-menu-footer">
+                <button id="library" type="button" class="quiet">Model library</button>
+                <button id="rescan" type="button" class="quiet">Rescan folders</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <ul id="draft-files" class="draft-files" aria-label="Files attached to this draft" hidden></ul>
+        <textarea id="draft" rows="2" aria-label="Message" placeholder="Message your local model…" disabled></textarea>
+        <div class="composer-controls">
+          <input id="file-picker" type="file" multiple hidden>
+          <input id="image-picker" type="file" accept="image/png,image/jpeg,.png,.jpg,.jpeg" multiple hidden>
+          <div class="composer-tools" role="group" aria-label="Message tools">
+            <button id="attach" class="quiet" type="button" aria-label="Add files" title="Attach UTF-8 text files to this message" disabled><svg class="icon" aria-hidden="true"><use href="#icon-attach"/></svg><span>Add files</span></button>
+            <button id="vision" class="quiet icon-button composer-tool" type="button" aria-label="Vision" title="Choose a model to use Vision" disabled><svg class="icon" aria-hidden="true"><use href="#icon-image"/></svg></button>
+            <button id="web-search" class="quiet icon-button composer-tool" type="button" aria-label="Set up web search" aria-haspopup="dialog" title="Set up web search with a Tavily API key" disabled>
+              <svg class="icon" aria-hidden="true"><use href="#icon-globe"/></svg>
+            </button>
+            <button id="mtp" class="quiet icon-button composer-tool" type="button" aria-label="Multi-token prediction (MTP)" aria-pressed="false" title="Multi-token prediction" disabled><svg class="icon" aria-hidden="true"><use href="#icon-mtp"/></svg></button>
+            <button id="thinking" class="quiet icon-button composer-tool" type="button" aria-label="Thinking" aria-pressed="false" disabled><svg class="icon" aria-hidden="true"><use href="#icon-thinking"/></svg></button>
+          </div>
+          <div class="composer-feedback">
+            <span id="detail" class="detail muted" role="status"></span>
+            <div id="voice-panel" class="voice-panel">
+              <span id="voice-status" class="voice-status" role="status"></span>
+              <span id="voice-elapsed" class="voice-elapsed" aria-hidden="true" hidden>0:00</span>
+              <div id="voice-signal" class="voice-signal" aria-hidden="true" hidden>
+                <svg id="voice-waveform" class="voice-waveform" viewBox="0 0 256 30" preserveAspectRatio="none">
+                  <path id="voice-waveform-bars" vector-effect="non-scaling-stroke"/>
+                </svg>
+                <meter id="voice-level" class="voice-level" min="0" max="5" value="0"></meter>
+              </div>
+            </div>
+          </div>
+          <div class="composer-submit">
+            <button id="voice-cancel" class="quiet icon-button" type="button" aria-label="Cancel recording" title="Cancel recording (Esc)" hidden>
+              <svg class="icon" aria-hidden="true"><use href="#icon-close"/></svg>
+            </button>
+            <button id="stop" class="stop" type="button" hidden>Stop</button>
+            <button id="dictate" class="quiet icon-button composer-tool" type="button" aria-label="Set up voice input" aria-haspopup="dialog" title="Set up voice input" disabled>
+              <svg class="icon" aria-hidden="true"><use href="#icon-mic"/></svg>
+            </button>
+            <button id="send" class="send" type="submit" aria-label="Send message" title="Send message (Enter)" disabled>
+              <svg class="icon" aria-hidden="true"><use href="#icon-arrow-up"/></svg>
+            </button>
+          </div>
+        </div>
+      </form>
+    </section>
+  </main>
+  <dialog id="modal" aria-labelledby="modal-title">
+    <form id="modal-form">
+      <header class="modal-heading">
+        <div>
+          <h2 id="modal-title"></h2>
+          <p id="modal-subtitle" class="muted" hidden></p>
+        </div>
+        <button class="quiet icon-button" id="modal-close" type="button" aria-label="Close dialog" title="Close (Esc)"><svg class="icon" aria-hidden="true"><use href="#icon-close"/></svg></button>
+      </header>
+      <div id="modal-content" class="modal-content"></div>
+      <p id="modal-error" class="error" role="alert" hidden></p>
+      <footer id="modal-actions" class="modal-actions"></footer>
+    </form>
+  </dialog>
+  <dialog id="inference-analytics" aria-labelledby="analytics-title">
+    <header class="modal-heading">
+      <div>
+        <h2 id="analytics-title">Inference analytics</h2>
+        <p id="analytics-conversation" class="muted"></p>
+      </div>
+      <button class="quiet icon-button" id="analytics-close" type="button" aria-label="Close analytics" title="Close (Esc)" autofocus><svg class="icon" aria-hidden="true"><use href="#icon-close"/></svg></button>
+    </header>
+    <div class="analytics-tabs" role="tablist" aria-label="Inference analytics">
+      <button id="analytics-overview-tab" role="tab" aria-selected="true" aria-controls="analytics-overview" type="button">Overview</button>
+      <button id="analytics-recent-tab" role="tab" aria-selected="false" aria-controls="analytics-recent" tabindex="-1" type="button">Recent requests</button>
+    </div>
+    <section id="analytics-overview" class="analytics-page" role="tabpanel" aria-labelledby="analytics-overview-tab" tabindex="0"></section>
+    <section id="analytics-recent" class="analytics-page" role="tabpanel" aria-labelledby="analytics-recent-tab" tabindex="0" hidden></section>
+  </dialog>
+</body>
+</html>

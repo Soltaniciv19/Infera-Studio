@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Infera Studio
+GenericName=Local LLM Chat
+Comment=Chat with local GGUF models
+Exec=infera-studio
+Icon=infera-studio
+Terminal=false
+Categories=Utility;
+Keywords=LLM;AI;GGUF;llama.cpp;
+StartupNotify=true

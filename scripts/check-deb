@@ -1,0 +1,96 @@
+#!/usr/bin/python3
+"""Verify package install, desktop launch and removal in disposable XDG and dpkg roots."""
+
+import os
+import shutil
+import stat
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+
+def main() -> None:
+    project = Path(__file__).resolve().parent.parent
+    control = (project / "packaging/control").read_text().splitlines()
+    version = next(line.split(": ", 1)[1] for line in control if line.startswith("Version: "))
+    package = (
+        Path(sys.argv[1]).resolve() if len(sys.argv) > 1
+        else project / "dist" / f"infera-studio_{version}_amd64.deb"
+    )
+    if not package.is_file():
+        raise SystemExit(f"Package does not exist: {package}. Run scripts/build-deb first.")
+    depends = subprocess.check_output(["dpkg-deb", "-f", str(package), "Depends"], text=True)
+    dependencies = [entry.strip().split()[0] for entry in depends.split(",")]
+    with tempfile.TemporaryDirectory(prefix="infera-studio-package-") as temporary:
+        root = Path(temporary)
+        install, database = root / "install", root / "dpkg"
+        install.mkdir()
+        database.mkdir()
+        status = subprocess.check_output(["dpkg-query", "--status", *dependencies])
+        (database / "status").write_bytes(status)
+        info = database / "info"
+        info.mkdir()
+        for name in dependencies:
+            for qualifier in ("", ":amd64"):
+                (info / f"{name}{qualifier}.list").touch()
+        command = [
+            "dpkg",
+            "--force-not-root",
+            f"--admindir={database}",
+            f"--instdir={install}",
+            f"--log={root / 'dpkg.log'}",
+        ]
+        subprocess.run([*command, "--install", str(package)], check=True)
+        desktop = install / "usr/share/applications/infera-studio.desktop"
+        icon = install / "usr/share/icons/hicolor/256x256/apps/infera-studio.png"
+        if not desktop.is_file() or not icon.is_file():
+            raise RuntimeError("The package did not install the desktop file and icon.")
+        if shutil.which("desktop-file-validate"):
+            subprocess.run(["desktop-file-validate", str(desktop)], check=True)
+        config = root / "config/infera-studio"
+        config.mkdir(parents=True)
+        (config / "settings.json").write_text('{"setup_complete":true,"model_dirs":[],"backend":"CPU"}\n')
+        launcher = install / "usr/bin/infera-studio"
+        whisper = install / "usr/lib/infera-studio/resources/whisper/whisper-cli"
+        subprocess.run([str(whisper), "--version"], check=True)
+        subprocess.run([str(whisper.with_name("infera-whisper-worker")), "--version"], check=True)
+        if not os.access(whisper.with_name("infera-whisper-worker-avx2"), os.X_OK):
+            raise RuntimeError("The package did not install the accelerated Whisper worker.")
+        if available_sandbox := os.environ.get("INFERA_TEST_SANDBOX"):
+            helper = Path(available_sandbox).resolve(strict=True)
+            metadata = helper.stat()
+            if metadata.st_uid != 0 or not metadata.st_mode & stat.S_ISUID or not os.access(helper, os.X_OK):
+                raise ValueError("INFERA_TEST_SANDBOX must name an executable root-owned setuid sandbox helper.")
+            # The temporary install runs as a normal user and cannot preserve root ownership.
+            sandbox = install / "usr/lib/infera-studio/chrome-sandbox"
+            sandbox.unlink()
+            sandbox.symlink_to(helper)
+        env = os.environ | {
+            "XDG_CONFIG_HOME": str(config.parent),
+            "XDG_DATA_HOME": str(root / "data"),
+            "XDG_STATE_HOME": str(root / "state"),
+            "INFERA_TEST_LAUNCHER": str(launcher),
+            "INFERA_TEST_STARTUP_ONLY": "1",
+            "INFERA_TEST_BUNDLED_VOICE": "1",
+        }
+        subprocess.run([str(launcher), "--version"], env=env, check=True)
+        subprocess.run(["node", str(project / "scripts/test-electron.cjs")], env=env, check=True, timeout=55)
+        data = root / "data/infera-studio/conversations.sqlite3"
+        if not data.is_file():
+            raise RuntimeError("The installed app did not open local conversation storage.")
+        subprocess.run([*command, "--remove", "infera-studio"], check=True)
+        if (
+            launcher.exists()
+            or desktop.exists()
+            or (install / "usr/lib/infera-studio").exists()
+            or not data.is_file()
+        ):
+            raise RuntimeError("Package removal did not preserve user data or left installed files.")
+    print(
+        "Verified package installation, desktop startup, bundled Whisper, removal and user-data retention."
+    )
+
+
+if __name__ == "__main__":
+    main()

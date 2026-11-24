@@ -1,0 +1,67 @@
+#!/bin/sh
+set -eu
+umask 022
+
+project=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
+output_dir=${1:-"$project/dist"}
+mkdir -p "$output_dir"
+stage=$(mktemp -d)
+chmod 0755 "$stage"
+artifact=$(mktemp "$output_dir/.infera-studio-XXXXXX.deb")
+trap 'rm -rf "$stage"; rm -f "$artifact"' EXIT HUP INT TERM
+
+modules="$project/node_modules"
+if [ ! -e "$modules/electron/install.js" ] || [ ! -e "$modules/markdown-it/dist/browser/markdown-it.umd.min.js" ] || [ ! -e "$modules/@highlightjs/cdn-assets/highlight.min.js" ]; then
+  npm --prefix "$project" ci
+fi
+if [ ! -x "$modules/electron/dist/electron" ]; then
+  (cd "$project" && node -e 'require("electron")')
+fi
+"$project/scripts/build-whisper"
+
+runtime="$stage/usr/lib/infera-studio"
+app="$runtime/resources/app"
+voice="$runtime/resources/whisper"
+install -d "$stage/DEBIAN" "$stage/usr/bin" "$app/electron" "$app/packaging" "$voice" \
+  "$app/node_modules/markdown-it/dist/browser" "$app/node_modules/@highlightjs/cdn-assets" \
+  "$stage/usr/share/applications" "$stage/usr/share/icons/hicolor/256x256/apps" \
+  "$stage/usr/share/doc/infera-studio"
+cp -R "$modules/electron/dist/." "$runtime/"
+chmod 4755 "$runtime/chrome-sandbox"
+version=$(sed -n 's/^Version: //p' "$project/packaging/control")
+(
+  cd "$project"
+  find infera_studio -path infera_studio/desktop/qt -prune -o -type f -name '*.py' -exec sh -ec '
+    destination=$1
+    shift
+    for file; do
+      install -D -m 0644 "$file" "$destination/$file"
+    done
+  ' sh "$app" {} +
+)
+install -m 0644 "$project/package.json" "$app/"
+install -m 0644 "$project"/electron/* "$app/electron/"
+install -m 0644 "$project/packaging/infera-studio.png" "$app/packaging/"
+install -m 0755 "$project/dist/whisper/whisper-cli" "$project/dist/whisper/infera-whisper-worker" \
+  "$project/dist/whisper/infera-whisper-worker-avx2" "$voice/"
+install -m 0644 "$project/dist/whisper/ggml-base-q5_1.bin" "$voice/"
+install -m 0644 "$project"/dist/whisper/LICENSE.* "$stage/usr/share/doc/infera-studio/"
+install -m 0644 "$modules/markdown-it/dist/browser/markdown-it.umd.min.js" "$app/node_modules/markdown-it/dist/browser/"
+install -m 0644 "$modules/markdown-it/LICENSE" "$app/node_modules/markdown-it/"
+install -m 0644 "$modules/@highlightjs/cdn-assets/highlight.min.js" "$modules/@highlightjs/cdn-assets/LICENSE" \
+  "$app/node_modules/@highlightjs/cdn-assets/"
+install -m 0755 "$project/packaging/infera-studio" "$stage/usr/bin/infera-studio"
+install -m 0644 "$project/packaging/infera-studio.desktop" "$stage/usr/share/applications/"
+install -m 0644 "$project/packaging/infera-studio.png" "$stage/usr/share/icons/hicolor/256x256/apps/"
+install -m 0644 "$project/README.md" "$project/ARCHITECTURE.md" "$stage/usr/share/doc/infera-studio/"
+cp "$project/packaging/control" "$stage/DEBIAN/control"
+installed_size=$(du -sk "$stage/usr" | cut -f1)
+printf '%s\n' "Installed-Size: $installed_size" >> "$stage/DEBIAN/control"
+
+if [ -n "${SOURCE_DATE_EPOCH:-}" ]; then
+  find "$stage" -exec touch -h -d "@$SOURCE_DATE_EPOCH" {} +
+fi
+dpkg-deb --root-owner-group --build "$stage" "$artifact"
+chmod 0644 "$artifact"
+mv -f "$artifact" "$output_dir/infera-studio_${version}_amd64.deb"
+printf '%s\n' "$output_dir/infera-studio_${version}_amd64.deb"

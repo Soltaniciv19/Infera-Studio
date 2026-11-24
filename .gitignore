@@ -1,0 +1,32 @@
+# Python caches, environments, and build output
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+*.egg-info/
+/build/
+
+# Dependencies and release artifacts
+node_modules/
+/dist/
+*.deb
+
+# Local editor and OS files
+.idea/
+.vscode/
+.DS_Store
+
+# Local settings, logs, conversation databases, and model weights
+.env
+.env.*
+!.env.example
+settings.json
+*.log
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+*.[gG][gG][uU][fF]

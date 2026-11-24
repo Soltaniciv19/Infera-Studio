@@ -1,0 +1,1 @@
+"""Private Electron backend adapter."""

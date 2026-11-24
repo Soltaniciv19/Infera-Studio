@@ -1,0 +1,68 @@
+#!/bin/sh
+set -eu
+umask 022
+
+project=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
+cache="$project/dist/whisper-cache"
+bundle="$project/dist/whisper"
+source_dir="$cache/whisper.cpp-96ec4d9823e9d0211944172da35f9f29134af990"
+build="$cache/build-infera-v1.9.6"
+model=ggml-base-q5_1.bin
+mkdir -p "$cache" "$bundle"
+exec 9>"$cache/build.lock"
+flock -x 9
+temporary=$(mktemp -d "$cache/.prepare-XXXXXX")
+trap 'rm -rf "$temporary"' EXIT
+trap 'exit 1' HUP INT TERM
+
+fetch() {
+  name=$1
+  url=$2
+  checksum=$3
+  if [ -f "$cache/$name" ] && printf '%s  %s\n' "$checksum" "$cache/$name" | sha256sum --check --status; then
+    return
+  fi
+  curl --fail --location --silent --show-error --retry 3 --output "$temporary/$name" "$url"
+  printf '%s  %s\n' "$checksum" "$temporary/$name" | sha256sum --check
+  mv -f "$temporary/$name" "$cache/$name"
+}
+
+# whisper.cpp v1.9.6 and the multilingual Whisper base Q5_1 model.
+fetch whisper.cpp-v1.9.6.tar.gz \
+  https://codeload.github.com/ggml-org/whisper.cpp/tar.gz/96ec4d9823e9d0211944172da35f9f29134af990 \
+  4d46e659151f31535b3947e322a58b0c604d3cbe93dfb284294e989a19d25ad7
+fetch "$model" \
+  "https://huggingface.co/ggerganov/whisper.cpp/resolve/5359861c739e955e79d9a303bcbc70fb988958b1/$model" \
+  422f1ae452ade6f30a004d7e5c6a43195e4433bc370bf23fac9cc591f01a8898
+fetch LICENSE.openai-whisper \
+  https://raw.githubusercontent.com/openai/whisper/6e3be77e1a105e59086e3e21ff5f609fd6fa89a5/LICENSE \
+  b5d65a59060e68c4ff940e1eddfa6f94b2d68fdf58ed7f4dd57721c997e35e9d
+
+if [ ! -d "$source_dir" ]; then
+  tar -xzf "$cache/whisper.cpp-v1.9.6.tar.gz" -C "$temporary"
+  mv "$temporary/${source_dir##*/}" "$source_dir"
+fi
+
+configure() {
+  directory=$1
+  cpu=$2
+  cmake -S "$project/native/whisper" -B "$directory" -DCMAKE_BUILD_TYPE=Release \
+    -DWHISPER_SOURCE_DIR="$source_dir" -DWHISPER_BUILD_EXAMPLES=ON \
+    -DBUILD_SHARED_LIBS=OFF -DWHISPER_BUILD_IS_DEV=OFF -DWHISPER_BUILD_TESTS=OFF -DWHISPER_BUILD_SERVER=OFF \
+    -DGIT_EXECUTABLE= -DGIT_EXE= -DGGML_CCACHE=OFF -DGGML_OPENMP=OFF -DGGML_NATIVE=OFF \
+    -DGGML_SSE42="$cpu" -DGGML_AVX="$cpu" -DGGML_AVX2="$cpu" -DGGML_BMI2="$cpu" \
+    -DGGML_FMA="$cpu" -DGGML_F16C="$cpu"
+}
+
+# Keep a baseline worker for older amd64 systems and an accelerated worker for live inference.
+configure "$build" OFF
+cmake --build "$build" --target whisper-cli infera-whisper-worker --parallel "${CMAKE_BUILD_PARALLEL_LEVEL:-4}"
+configure "$build-avx2" ON
+cmake --build "$build-avx2" --target infera-whisper-worker --parallel "${CMAKE_BUILD_PARALLEL_LEVEL:-4}"
+
+install -m 0755 "$build/bin/whisper-cli" "$build/bin/infera-whisper-worker" "$temporary/"
+install -m 0755 "$build-avx2/bin/infera-whisper-worker" "$temporary/infera-whisper-worker-avx2"
+install -m 0644 "$cache/$model" "$temporary/$model"
+install -m 0644 "$source_dir/LICENSE" "$temporary/LICENSE.whisper.cpp"
+install -m 0644 "$cache/LICENSE.openai-whisper" "$temporary/LICENSE.openai-whisper"
+mv -f "$temporary/whisper-cli" "$temporary/infera-whisper-worker" "$temporary/infera-whisper-worker-avx2" "$temporary/$model" "$temporary"/LICENSE.* "$bundle/"
